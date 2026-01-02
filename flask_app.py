@@ -1,8 +1,30 @@
 from flask import Flask, render_template, request, jsonify
 import json, os, time
 
+# --- NEW IMPORTS FOR DATABASE ---
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+from models import Base  # imports User + PushupLog models
+
+# --------------------------------
+
 app = Flask(__name__)
 
+# --- DATABASE SETUP (Step 5) ---
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///local.db")
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+SessionLocal = scoped_session(sessionmaker(bind=engine))
+
+# Create tables if they don't exist yet
+Base.metadata.create_all(engine)
+
+@app.teardown_appcontext
+def remove_session(exception=None):
+    SessionLocal.remove()
+# --------------------------------
+
+
+# --- EXISTING JSON SYSTEM (still active for now) ---
 DATA_FILE = "data.json"
 PUSHUP_GOAL = 50
 EMERGENCY_SECONDS = 15 * 60
@@ -18,6 +40,7 @@ def load_state():
 def save_state(state):
     with open(DATA_FILE, "w") as f:
         json.dump(state, f)
+# ---------------------------------------------------
 
 
 @app.route("/")
