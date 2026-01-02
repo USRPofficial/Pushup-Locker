@@ -1,3 +1,4 @@
+from flask_login import UserMixin
 from datetime import datetime
 from sqlalchemy import (
     Column,
@@ -12,7 +13,7 @@ from sqlalchemy.orm import declarative_base, relationship
 Base = declarative_base()
 
 
-class User(Base):
+class User(Base, UserMixin):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
