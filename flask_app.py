@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 import json, os, time
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from models import User
+from flask_login import LoginManager
+
 
 # --- NEW IMPORTS FOR DATABASE ---
 from sqlalchemy import create_engine
@@ -14,6 +19,17 @@ app = Flask(__name__)
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///local.db")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = scoped_session(sessionmaker(bind=engine))
+
+# --- LOGIN MANAGER SETUP (Step 6B) ---
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"  # route name we'll create later
+
+@login_manager.user_loader
+def load_user(user_id):
+    db = SessionLocal()
+    return db.query(User).get(int(user_id))
+
 
 # Create tables if they don't exist yet
 Base.metadata.create_all(engine)
@@ -91,6 +107,58 @@ def extend_emergency():
     state["emergency_until"] = time.time() + EMERGENCY_SECONDS
     save_state(state)
     return jsonify({"ok": True})
+
+# --- SIGNUP ROUTE ---
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        db = SessionLocal()
+
+        # Check if username or email already exists
+        if db.query(User).filter_by(username=username).first():
+            return "Username already taken"
+        if db.query(User).filter_by(email=email).first():
+            return "Email already registered"
+
+        # Create user
+        new_user = User(
+            username=username,
+            email=email,
+            password_hash=generate_password_hash(password)
+        )
+
+        db.add(new_user)
+        db.commit()
+
+        return "<p>Account created! <a href='/login'>Log in</a></p>"
+
+    return render_template("signup.html")
+
+# --- LOGIN ROUTE ---
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        db = SessionLocal()
+        user = db.query(User).filter_by(username=username).first()
+
+        if not user or not check_password_hash(user.password_hash, password):
+            return "Invalid username or password"
+
+        from flask_login import login_user
+        login_user(user)
+
+        return "<p>Logged in! <a href='/'>Go home</a></p>"
+
+    return render_template("login.html")
+
+
 
 
 if __name__ == "__main__":
