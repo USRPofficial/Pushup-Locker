@@ -3,11 +3,23 @@
 <head>
     <title>Pushup Locker</title>
     <style>
-        body { font-family: Arial; text-align: center; padding: 40px; }
-        #lock { font-size: 24px; margin-top: 20px; }
-        button { padding: 10px 20px; font-size: 18px; margin: 10px; }
+        body { 
+            font-family: Arial; 
+            text-align: center; 
+            padding: 40px; 
+        }
+        #lock { 
+            font-size: 24px; 
+            margin-top: 20px; 
+        }
+        button { 
+            padding: 10px 20px; 
+            font-size: 18px; 
+            margin: 10px; 
+        }
     </style>
 </head>
+
 <body>
     <h1>Pushup Locker</h1>
     <p>You must complete your pushups before scrolling!</p>
@@ -21,6 +33,7 @@
         async function refresh() {
             let r = await fetch("/status");
             let data = await r.json();
+
             if (data.emergency) {
                 document.getElementById("lock").innerText =
                     "Emergency mode active (" + data.time_left + "s left)";
@@ -33,10 +46,12 @@
         async function logPushups() {
             let amount = prompt("How many pushups?");
             if (!amount) return;
+
             await fetch("/log_pushups", {
                 method: "POST",
                 body: new URLSearchParams({ amount })
             });
+
             refresh();
         }
 
@@ -48,5 +63,13 @@
         setInterval(refresh, 1000);
         refresh();
     </script>
+
+    <!-- Staff Access -->
+    <h3>Staff Access</h3>
+    <form method="POST" action="/staff-code">
+        <input type="password" name="code" placeholder="Enter staff code">
+        <button type="submit">Enter</button>
+    </form>
+
 </body>
 </html>
