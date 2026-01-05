@@ -158,6 +158,18 @@ def login():
 
     return render_template("login.html")
 
+# Staff route
+@app.route("/staff-code", methods=["POST"])
+def staff_code():
+    code = request.form.get("code")
+
+    if code == "2424":
+        return redirect("/staff")
+    else:
+        return "Incorrect staff code"
+
+
+
 @app.route("/staff")
 def staff_dashboard():
     return render_template("staff_dashboard.html")
