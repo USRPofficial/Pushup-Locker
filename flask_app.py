@@ -158,6 +158,9 @@ def login():
 
     return render_template("login.html")
 
+@app.route("/staff")
+def staff_dashboard():
+    return render_template("staff_dashboard.html")
 
 
 
