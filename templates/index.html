@@ -48,12 +48,14 @@
         setInterval(refresh, 1000);
         refresh();
     </script>
+
+    <!-- ⭐ Staff Access Form (now correctly inside the body) -->
+    <h3>Staff Access</h3>
+    <form method="POST" action="/staff-code">
+        <input type="password" name="code" placeholder="Enter staff code">
+        <button type="submit">Enter</button>
+    </form>
+
 </body>
 </html>
 
-
-<h3>Staff Access</h3>
-<form method="POST" action="/staff-code">
-    <input type="password" name="code" placeholder="Enter staff code">
-    <button type="submit">Enter</button>
-</form>
